@@ -94,3 +94,176 @@ function ismayor($dateSelected, $dateInitialCourse)
     }
 }
 
+function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $idCourse)
+{   
+    global $DB;
+
+    foreach ($sqlGetDateRestriction as $data) {
+
+        $cont = 0;
+        if ($date = $data->availability != null) {
+            $result = json_decode($data->availability);
+            $date = date('d-m-Y', $result->c[$cont]->t);
+
+            if ($isMayor) {
+                
+                $date = strtotime($date. "+ $days days");
+                $result->c[$cont]->t = $date;
+                $result = json_encode($result);
+                
+                $sqlToUpload = "UPDATE mdl_course_sections
+                                SET availability = '$result'
+                                WHERE course = $idCourse";
+                
+                $DB->execute($sqlToUpload, $params=null);
+            }
+            else
+            {
+                $date = strtotime($date. "- $days days");
+                $result->c[$cont]->t = $date;
+                $result = json_encode($result);
+                $sqlToUpload = "UPDATE mdl_course_sections
+                SET availability = '$result'
+                WHERE course = $idCourse";
+
+                $DB->execute($sqlToUpload, $params=null);
+
+            }
+        }
+        $cont++;
+    }
+}
+
+function restrictionForumSections($sqlGetDateForum, $isMayor, $days, $idCourse)
+{
+    global $DB;
+
+    foreach ($sqlGetDateForum as $data) {
+
+        $duedate = $data->duedate;
+        $cutoffdate = $data->cutoffdate;
+        $duedateResult = date('d-m-Y', $duedate);
+        $cutoffdateResult = date('d-m-Y', $cutoffdate);
+
+        if ($duedate != 0) {
+
+            if ($isMayor) 
+            {
+                $duedate = strtotime($duedateResult. "+ $days days");
+            }
+            else 
+            {
+                $duedate = strtotime($duedateResult. "- $days days");
+            }
+        }
+
+        if ($cutoffdate != 0) {
+
+            if ($isMayor) 
+            {
+                $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
+            }
+            else
+            {      
+                $cutoffdate = strtotime($cutoffdateResult. "- $days days");
+            }
+        }
+
+        $sqlToUpload = "UPDATE mdl_forum 
+                        SET duedate = $duedate, cutoffdate = $cutoffdate
+                        WHERE course = $idCourse";
+        
+        $DB->execute($sqlToUpload, $params=null);
+    }
+}
+
+function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCourse)
+{
+    global $DB;
+
+    foreach ($sqlGetDateAssign as $data) {
+        
+        /* GET DATE */
+        $duedate = $data->duedate;
+        $cutoffdate = $data->cutoffdate;
+        $allowsubmission = $data->allowsubmissionsfromdate;
+        $gradingduedate = $data->gradingduedate;
+
+        /* CONVERSION */
+        $duedateResult = date('d-m-Y', $duedate);
+        $cutoffdateResult = date('d-m-Y', $cutoffdate);
+        $allowsubmissionResult = date('d-m-Y', $allowsubmission);
+        $gradingduedateResult = date('d-m-Y', $gradingduedate);
+        
+
+        if ($duedate != 0) {
+
+            if ($isMayor) 
+            {
+                $duedate = strtotime($duedateResult. "+ $days days");
+            }
+            else 
+            {
+                $duedate = strtotime($duedateResult. "- $days days");
+            }
+        }
+
+        if ($cutoffdate != 0) {
+
+            if ($isMayor) 
+            {
+                $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
+            }
+            else
+            {      
+                $cutoffdate = strtotime($cutoffdateResult. "- $days days");
+            }
+        }
+
+        if ($allowsubmission != 0 || $gradingduedate != 0) {
+            
+            if ($isMayor) 
+            {
+                $allowsubmission = strtotime($allowsubmissionResult. "+ $days days");
+                $gradingduedate = strtotime($gradingduedateResult. "+ $days days");    
+            }
+            else {
+                $allowsubmission = strtotime($allowsubmissionResult. "- $days days");
+                $gradingduedate = strtotime($allowsubmissionResult. "- $days days");
+            }
+        }
+
+        $sqlToUpload = "UPDATE mdl_assign
+                        SET duedate = $duedate, 
+                            cutoffdate = $cutoffdate,
+                            allowsubmissionsfromdate = $allowsubmission,
+                            gradingduedate = $gradingduedate
+                        WHERE course = $idCourse";
+        $DB->execute($sqlToUpload, $params = null);
+    }   
+}
+
+function changeDateCourse($days, $newStartDate, $courseData, $isMayor, $idCourse) // newStardate = date selected
+{
+    global $DB;
+    
+    $endDate;
+    $endDate = $courseData[$idCourse]->enddate;
+    $endDateResult = date('d-m-Y', $endDate);
+
+    if ($isMayor) 
+    {
+        $endDate = strtotime($endDateResult. "+ $days days"); 
+    }
+    else
+    {
+        $endDate = strtotime($endDateResult. "- $days days");
+    }
+
+    $sqlToUpload = "UPDATE mdl_course 
+                    SET startdate = $newStartDate, enddate = $endDate
+                    WHERE id = $idCourse";
+    $DB->execute($sqlToUpload, $params=null);
+
+}
+

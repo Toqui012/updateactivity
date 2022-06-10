@@ -90,151 +90,54 @@ if($activitydate->is_cancelled()) {
     // Url de redirección
     $courseurl = new moodle_url('/course/view.php', array('id' => $courseid));
     
-    // Se asigna los valores de selectcourses a los atributos del formulario
-    $fromform->selectcourses = $coursesselected;    
-    
     try {
-        
-        // Modificar el foro
-        // Modificar cuestionarios
-        // Modificar retricciones de la semana
-        // Course Section
-        // Quiz
+        if ($fromform->selectcategories !=-1) {
 
-        // Se transforma la fecha de unixtime a string(date)
-        $toDate = date('d-m-Y', $fromform->initialdate);
-
-
-        // Se hace una consulta a la tabla cursos para obtener la fecha inicial del curso seleccionado
-        $days = -1;
-        foreach ($fromform->selectcourses as $value) {
-
-            /* Se obtiene la diferencia de fechas */
-            $sqlGetDate = $DB->get_records('course', array('id' => $value));
-            $toDate2 = date('d-m-Y', $sqlGetDate[$value]->startdate);
-            $dateSelected = new DateTime($toDate);
-            $dateInitialCourse = new DateTime($toDate2);
-            $diff = $dateSelected->diff($dateInitialCourse);
-            $days = $diff->days;
-
-            // Verificar si la fecha se adelanta o se atrasa
-            $mayorOrLess = ismayor($dateSelected, $dateInitialCourse);
-
-            /* Get Dates */
-            $sqlGetDateForum = $DB->get_records('forum', array('course' => $value));
-            $sqlGetDateAssign = $DB->get_records('assign', array('course' => $value)); // duedate / cutoffdate
-            $sqlGetDateRestriction = $DB->get_records('course_sections', array('course' => $value));
-
-            /* Recorrer Data para obtener fechas*/
-            foreach ($sqlGetDateRestriction as $data) {
-
-                $cont = 0;
-                if ($date = $data->availability != null) {
-                    $date = json_decode($data->availability);
-                    $date = date('d-m-Y', $date->c[$cont]->t);
-                    if ($mayorOrLess) {
-                        $date = strtotime($date. "+ $days days");
-                    }
-                    else
-                    {
-                        $date = strtotime($date. "- $days days");
-                    }
-                }
-                $cont++;
-            }
-
-            foreach ($sqlGetDateForum as $data) {
-
-                $duedate = $data->duedate;
-                $cutoffdate = $data->cutoffdate;
-                
-                if ($duedate != 0) {
-
-                    if ($mayorOrLess) 
-                    {
-                        $duedateResult = date('d-m-Y', $duedate);
-                        $duedate = strtotime($duedateResult. "+ $days days");
-                    }
-                    else 
-                    {
-                        $duedateResult = date('d-m-Y', $duedate);
-                        $duedate = strtotime($duedateResult. "- $days days");
-                    }
-                }
-
-                if ($cutoffdate != 0) {
-
-                    if ($mayorOrLess) 
-                    {
-                        $cutoffdateResult = date('d-m-Y', $cutoffdate);
-                        $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
-                    }
-                    else
-                    {      
-                        $cutoffdateResult = date('d-m-Y', $cutoffdate);
-                        $cutoffdate = strtotime($cutoffdateResult. "- $days days");
-                    }
-                }
-            }
-
-            foreach ($sqlGetDateAssign as $data) {
-                
-                $duedate = $data->duedate;
-                $cutoffdate = $data->cutoffdate;
-
-                if ($duedate != 0) {
-
-                    if ($mayorOrLess) 
-                    {
-                        $duedateResult = date('d-m-Y', $duedate);
-                        $duedate = strtotime($duedateResult. "+ $days days");
-                    }
-                    else 
-                    {
-                        $duedateResult = date('d-m-Y', $duedate);
-                        $duedate = strtotime($duedateResult. "- $days days");
-                    }
-                }
-
-                if ($cutoffdate != 0) {
-
-                    if ($mayorOrLess) 
-                    {
-                        $cutoffdateResult = date('d-m-Y', $cutoffdate);
-                        $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
-                    }
-                    else
-                    {      
-                        $cutoffdateResult = date('d-m-Y', $cutoffdate);
-                        $cutoffdate = strtotime($cutoffdateResult. "- $days days");
-                    }
-                }
-
-            }
-
-
-            /* Update Section */
-            $sqlUpdateCourse = "UPDATE mdl_course
-                                SET startdate = $fromform->initialdate
-                                WHERE id = $value";
-
-            // $sqlUpdateForum =  "UPDATE mdl_forum
-            //                     SET duedate = ";
-            // $sqlUpdateAssign;
             
+            // Se asigna los valores de selectcourses a los atributos del formulario
+            $fromform->selectcourses = $coursesselected;  
+            
+            // Se transforma la fecha de unixtime a string(date)
+            $toDate = date('d-m-Y', $fromform->initialdate);
+            
+            // Se hace una consulta a la tabla cursos para obtener la fecha inicial del curso seleccionado
+            $days = -1;
+            foreach ($fromform->selectcourses as $value) {
 
+                /* Se obtiene la diferencia de fechas */
+                $sqlGetDate = $DB->get_records('course', array('id' => $value));
+                $toDate2 = date('d-m-Y', $sqlGetDate[$value]->startdate);
+                $dateSelected = new DateTime($toDate);
+                $dateInitialCourse = new DateTime($toDate2);
+                $diff = $dateSelected->diff($dateInitialCourse);
+                $days = $diff->days;
 
-            // if (!$DB->execute($sql, $params = null))
-            // {
-            //     print_error('Ha ocurrido un error al actualizar la base de datos');
-            // }
+                // Verificar si la fecha se adelanta o se atrasa
+                $mayorOrLess = ismayor($dateSelected, $dateInitialCourse);
+
+                /* Get Dates */
+                $sqlGetDateForum = $DB->get_records('forum', array('course' => $value));
+                $sqlGetDateAssign = $DB->get_records('assign', array('course' => $value)); // duedate / cutoffdate
+                $sqlGetDateRestriction = $DB->get_records('course_sections', array('course' => $value));
+
+                /* Upload sections */
+                changeDateCourse($days, $fromform->initialdate, $sqlGetDate, $mayorOrLess, $value);
+                restrictionsCourseSections($sqlGetDateRestriction, $mayorOrLess, $days, $value);
+                restrictionForumSections($sqlGetDateForum, $mayorOrLess, $days, $value);
+                restrictionAssignSections($sqlGetDateAssign, $mayorOrLess, $days, $value);
+
+                redirect($courseurl, "La operación se ha llevado a cabo exitosamente", 
+                null, \core\output\notification::NOTIFY_SUCCESS);
+            }
         }
-
+        else
+        {
+            redirect($courseurl, "Formulario incompleto", null, \core\output\notification::NOTIFY_ERROR);
+        }
     } catch (\Throwable $th) {
-        throw $th;
+        redirect($courseurl, "Ha ocurrido un problema interno al actualizar los cursos", null, \core\output\notification::NOTIFY_ERROR);
+        // throw $th;
     }    
-    
-    // print_r($fromform);    
 
 } else {
     // Primera vez o con errores

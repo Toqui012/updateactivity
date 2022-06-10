@@ -23,7 +23,6 @@ require(['core/first', 'jquery', 'jqueryui', 'core/ajax'], function(core, $, boo
         // clear out old values
         $('#id_selectcourses').html('');
         var data = JSON.parse(response);
-        console.log(data);
         for (var i = 0; i < data.length; i++) {
           $('<option/>').val(data[i].id).html(data[i].fullname).appendTo('#id_selectcourses');
         }
@@ -42,7 +41,7 @@ require(['core/first', 'jquery', 'jqueryui', 'core/ajax'], function(core, $, boo
     });
 
     function setnewvalue() {
-      console.log($('#id_selectcourses').val());
+      // console.log($('#id_selectcourses').val());
       $('input[name = courseid]').val($('#id_selectcourses ').val());
     }
 
