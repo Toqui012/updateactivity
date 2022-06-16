@@ -35,17 +35,17 @@ class activitydate_form extends moodleform {
 
         global $CFG,$DB;
         
+        // Params Forms
         $mform =& $this->_form;
-        // elementos ocultos
         $mform->addElement('hidden', 'blockid');
         $mform->setType('blockid', PARAM_RAW);
         $mform->addElement('hidden', 'courseid');
         $mform->setType('courseid', PARAM_RAW);
     
-        /* Title Form */
+        // Title Form
         $mform->addElement('html','<h3>Formulario del Bloque</h3><br><br>');
-
-        /* Initial date Selector */
+        
+        // Params Select Category
         $categoriesArray = array();
         $options = array();
         $options[-1] = 'None';
@@ -55,27 +55,28 @@ class activitydate_form extends moodleform {
             $options[$category->id] = $category->name;
         }
 
-        $mform->addElement('select',  'selectcategories',  
-                get_string('selectcategories', 'block_activitydate'),$options);
-        $mform->addRule('selectcategories', null, 'required');
-        $mform->setType('selectcategories', PARAM_INT);                  
-        $mform->setDefault('selectcategories',  -1);
+        // Select Category
+        $mform->addElement('select',  'selectcategory',  
+        get_string('selectcategories', 'block_activitydate'),$options);
+        $mform->addRule('selectcategory', null, 'required');
+        $mform->setType('selectcategory', PARAM_INT);                  
+        $mform->setDefault('selectcategory',  -1);
 
-
-        /* Initial date Selector */
+        // Multi-Select Course
         $options=[];
         $selectcourse = $mform->addElement('select', 'selectcourses',
-                        get_string('selectcourse', 'block_activitydate'),$options);
+        get_string('selectcourse', 'block_activitydate'),$options);
         $mform->addRule('selectcourses', null, 'required');
         $mform->setType('selectcourses', PARAM_INT);
-        $mform->setDefault('selectcategories',  -1);
+        $mform->setDefault('selectcategory',  -1);
         $selectcourse->setMultiple(true);
 
+        // Input CourseId Value
         $mform->addElement('hidden', 'courseid');
         $mform->setType('courseid', PARAM_INT);
         $mform->setDefault('courseid', -1);
 
-        /* Initial date Selector */
+        /* Date Selector */
         $mform->addElement('date_selector',  'initialdate',  
                 get_string('initialdate', 'block_activitydate'));
         $mform->addRule('initialdate', null, 'required');

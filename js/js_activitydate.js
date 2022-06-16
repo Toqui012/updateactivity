@@ -11,11 +11,12 @@ require(['core/first', 'jquery', 'jqueryui', 'core/ajax'], function(core, $, boo
   $(document).ready(function() {
 
     //  toggle event
-    $('#id_selectcategories').change(function() {
+    $('#id_selectcategory').change(function() {
       // get current value then call ajax to get new data
-      var selectedcourseid = $('#id_selectcategories').val();
+      var selectedcourseid = $('#id_selectcategory').val();
+      console.log("Id de Categoria "+selectedcourseid);
       ajax.call([{
-        methodname: 'local_ajaxdemo_getteachersincourse',
+        methodname: 'local_activitydate_getcoursesincategory',
         args: {
           'id': selectedcourseid
         },
@@ -24,6 +25,7 @@ require(['core/first', 'jquery', 'jqueryui', 'core/ajax'], function(core, $, boo
         $('#id_selectcourses').html('');
         var data = JSON.parse(response);
         for (var i = 0; i < data.length; i++) {
+          console.log("Id de cursos "+data[i].id);
           $('<option/>').val(data[i].id).html(data[i].fullname).appendTo('#id_selectcourses');
         }
         setnewvalue();
@@ -42,7 +44,7 @@ require(['core/first', 'jquery', 'jqueryui', 'core/ajax'], function(core, $, boo
 
     function setnewvalue() {
       // console.log($('#id_selectcourses').val());
-      $('input[name = courseid]').val($('#id_selectcourses ').val());
+      $('input[name = courseid]').val($('#id_selectcourses').val());
     }
 
   });

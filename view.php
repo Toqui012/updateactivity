@@ -33,7 +33,7 @@ require_once($CFG->dirroot.'/blocks/activitydate/classes/HistoricalRecordFile.ph
 global $DB, $OUTPUT, $PAGE;
 
 // Definiciones
-$PAGE->requires->js('/blocks/activitydate/js/js_ajaxdemo.js');
+$PAGE->requires->js('/blocks/activitydate/js/js_activitydate.js');
 
 // Check for all required variables.
 $courseid = required_param('courseid', PARAM_INT);
@@ -90,8 +90,9 @@ if($activitydate->is_cancelled()) {
     // Url de redirección
     $courseurl = new moodle_url('/course/view.php', array('id' => $courseid));
     
+    // Source
     try {
-        if ($fromform->selectcategories !=-1) {
+        if ($fromform->selectcategory !=-1) {
 
             
             // Se asigna los valores de selectcourses a los atributos del formulario
@@ -102,8 +103,10 @@ if($activitydate->is_cancelled()) {
             
             // Se hace una consulta a la tabla cursos para obtener la fecha inicial del curso seleccionado
             $days = -1;
-            foreach ($fromform->selectcourses as $value) {
 
+            // Se recorre el array según los ids seleccionados en "selectcourses"
+            foreach ($fromform->selectcourses as $value) {
+                
                 /* Se obtiene la diferencia de fechas */
                 $sqlGetDate = $DB->get_records('course', array('id' => $value));
                 $toDate2 = date('d-m-Y', $sqlGetDate[$value]->startdate);
@@ -119,16 +122,16 @@ if($activitydate->is_cancelled()) {
                 $sqlGetDateForum = $DB->get_records('forum', array('course' => $value));
                 $sqlGetDateAssign = $DB->get_records('assign', array('course' => $value)); // duedate / cutoffdate
                 $sqlGetDateRestriction = $DB->get_records('course_sections', array('course' => $value));
-
+                $sqlGetCourseRestriction = $DB->get_records('course_modules', array('course' => $value));
                 /* Upload sections */
                 changeDateCourse($days, $fromform->initialdate, $sqlGetDate, $mayorOrLess, $value);
                 restrictionsCourseSections($sqlGetDateRestriction, $mayorOrLess, $days, $value);
                 restrictionForumSections($sqlGetDateForum, $mayorOrLess, $days, $value);
                 restrictionAssignSections($sqlGetDateAssign, $mayorOrLess, $days, $value);
-
-                redirect($courseurl, "La operación se ha llevado a cabo exitosamente", 
-                null, \core\output\notification::NOTIFY_SUCCESS);
+                updateCourseRestriction($sqlGetCourseRestriction, $mayorOrLess, $days, $value);
             }
+
+            redirect($courseurl, "La operación se ha llevado a cabo exitosamente", null, \core\output\notification::NOTIFY_SUCCESS);
         }
         else
         {

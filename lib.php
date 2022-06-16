@@ -24,64 +24,13 @@
  * 
  */
 
-require_once($CFG->libdir . "/externallib.php");
-
-
-class local_ajaxdemo_external extends external_api
-{
-
-    /**
-     * Returns description of method parameters
-     * @return external_function_parameters
-     */
-    public static function getteachersincourse_parameters()
-    {
-        return new external_function_parameters(
-          array("id" => new external_value(PARAM_INT, "id"))
-        );
-    }
-
-    /**
-     * Returns welcome message
-     * @return array = array('' => , ); welcome message
-     */
-    public static function getteachersincourse($id)
-    {
-        global $USER;
-        global $DB;
-        global $CFG;
-
-        //$context = context_system::instance();
-        // $context = context_user::instance($USER->id);
-        // self::validate_context($context);
-
-        $params = self::validate_parameters(
-            self::getteachersincourse_parameters(),
-                array('id'=>$id)
-        );
-
-        $teachers = $DB->get_records('course', array('category'=> $id));
-        return json_encode(array_values($teachers));
-    }
-
-    /**
-     * Returns description of method result value
-     * @return external_description
-     */
-    public static function getteachersincourse_returns()
-    {
-        return new external_value(PARAM_RAW, 'The updated JSON output');
-//        return new external_value();//new external_value(PARAM_TEXT, 'The welcome message + user first name');
-    }
-
-}
-
 function get_categories_todb()
 {   
     global $DB;
     return $DB->get_records('course_categories');
 }
 
+// Mayor or less function
 function ismayor($dateSelected, $dateInitialCourse)
 {   
     if ($dateSelected > $dateInitialCourse)
@@ -94,49 +43,67 @@ function ismayor($dateSelected, $dateInitialCourse)
     }
 }
 
+// Update Course Restrictions
 function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $idCourse)
 {   
     global $DB;
 
-    foreach ($sqlGetDateRestriction as $data) {
-
-        $cont = 0;
-        if ($date = $data->availability != null) {
+    foreach($sqlGetDateRestriction as $data)
+    {
+        // se valida que no entren fechas null (en este caso json)
+        if ($date = $data->availability !=null) {
+            
             $result = json_decode($data->availability);
-            $date = date('d-m-Y', $result->c[$cont]->t);
+            
+            $date = date('d-m-Y', $result->c[0]->t); // Fecha (desde) de restrición
+            $enddate = date('d-m-Y', $result->c[1]->t); // Fecha (hasta) de restricción
 
-            if ($isMayor) {
+            // Actualización de (desde) de la restrición
+            if ($result->c[0]->t != null) {
                 
-                $date = strtotime($date. "+ $days days");
-                $result->c[$cont]->t = $date;
-                $result = json_encode($result);
-                
-                $sqlToUpload = "UPDATE mdl_course_sections
-                                SET availability = '$result'
-                                WHERE course = $idCourse";
-                
-                $DB->execute($sqlToUpload, $params=null);
+                if ($isMayor) {
+                    $date = strtotime($date."+ $days days");
+                    $result->c[0]->t = $date;
+                }
+                else {
+                    $date = strtotime($date."- $days days");
+                    $result->c[0]->t = $date;
+                }
             }
-            else
-            {
-                $date = strtotime($date. "- $days days");
-                $result->c[$cont]->t = $date;
-                $result = json_encode($result);
-                $sqlToUpload = "UPDATE mdl_course_sections
-                SET availability = '$result'
-                WHERE course = $idCourse";
 
-                $DB->execute($sqlToUpload, $params=null);
-
+            // Actualización de (hasta) de la restrición
+            if ($result->c[1]->t != null) {
+    
+                if ($isMayor) {
+                    $enddate = strtotime($enddate."+ $days days");
+                    $result->c[1]->t = $enddate;
+                }
+                else{
+                    $enddate = strtotime($enddate."- $days days");
+                    $result->c[1]->t = $enddate;
+                }
             }
+
+            // Se transforma a json para respetar la estrucutra de la base de datos
+            $result = json_encode($result);
+
+            $sqlToUpload = "UPDATE mdl_course_sections
+            SET availability = '$result' 
+            WHERE course = $idCourse";
+
+            $DB->execute($sqlToUpload, $params=null);
         }
-        $cont++;
     }
+    
 }
 
+// Update Forum Restrictions
 function restrictionForumSections($sqlGetDateForum, $isMayor, $days, $idCourse)
 {
     global $DB;
+
+    echo('<br>');
+    echo('Función de Foros');
 
     foreach ($sqlGetDateForum as $data) {
 
@@ -177,9 +144,13 @@ function restrictionForumSections($sqlGetDateForum, $isMayor, $days, $idCourse)
     }
 }
 
+// Update Assign Restrictions
 function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCourse)
 {
     global $DB;
+
+    echo('<br>');
+    echo('Función de Tareas (Assign)');
 
     foreach ($sqlGetDateAssign as $data) {
         
@@ -243,9 +214,16 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
     }   
 }
 
+// Update Course Date
 function changeDateCourse($days, $newStartDate, $courseData, $isMayor, $idCourse) // newStardate = date selected
 {
     global $DB;
+
+    /** ------------ Fixear Codigo ----------- */
+    // Validar si es null
+
+    echo('<br>');
+    echo('Función de Cursos');
     
     $endDate;
     $endDate = $courseData[$idCourse]->enddate;
@@ -265,5 +243,63 @@ function changeDateCourse($days, $newStartDate, $courseData, $isMayor, $idCourse
                     WHERE id = $idCourse";
     $DB->execute($sqlToUpload, $params=null);
 
+}
+
+// Update Course Restriction
+function updateCourseRestriction($sqlGetCourseModules, $isMayor, $days, $idCourse){
+    
+    global $DB;
+    
+    foreach ($sqlGetCourseModules as $data) {
+    
+        $cont = 0;
+        $endcont = 1;
+
+        // se valida que no entren fechas null
+        if ($date = $data->availability != null) {
+
+            $result = json_decode($data->availability);
+            
+            $date = date('d-m-Y', $result->c[0]->t); // Fecha (desde) de restrición
+            $enddate = date('d-m-Y', $result->c[1]->t); // Fecha (hasta) de restricción
+
+            // Actualización de (desde) de la restrición
+            if ($result->c[0]->t != null) {
+                
+                if ($isMayor) {
+                    $date = strtotime($date."+ $days days");
+                    $result->c[0]->t = $date;
+                }
+                else {
+                    $date = strtotime($date."- $days days");
+                    $result->c[0]->t = $date;
+                }
+            }
+
+            // Actualización de (hasta) de la restrición
+            if ($result->c[1]->t != null) {
+    
+                if ($isMayor) {
+                    $enddate = strtotime($enddate."+ $days days");
+                    $result->c[1]->t = $enddate;
+                }
+                else{
+                    $enddate = strtotime($enddate."- $days days");
+                    $result->c[1]->t = $enddate;
+                }
+            }
+
+            // Se transforma a json para respetar la estrucutra de la base de datos
+            $result = json_encode($result);
+
+            $sqlToUpload = "UPDATE mdl_course_modules
+            SET availability = '$result' 
+            WHERE course = $idCourse";
+
+            $DB->execute($sqlToUpload, $params=null);
+        }
+
+        
+    }
 }
 

@@ -29,7 +29,7 @@ $string['activitydate:addinstance'] = 'Add a new update activity dates block';
 $string['activitydate:myaddinstance'] = 'Add a new update activity dates block to the My Moodle page';
 
 /** Description Block */
-$string['descriptionblock'] = 'Block responsible for making changes to the dates of various activities of a specific course via csv!';
+$string['descriptionblock'] = 'Block in charge of making multiple modifications of dates in a massive way, to courses and dependency suss (activities, forums, restrictions, etc)!';
 
 /** Footer Block */
 $string['footerblock'] = 'All rights reserved';

@@ -1,17 +1,14 @@
 <?php
 
-    $functions = array(
-        'local_ajaxdemo_getcoursesincategorie' => array(
-        'classname'   => 'local_ajaxdemo_external',
-        'methodname'  => 'getcoursesincategorie',
-        'classpath' => 'blocks/activitydate/lib.php',
-        'description' => 'Return teachers in a course',
+$functions = array(
+    'local_activitydate_getcoursesincategory' => array(
+        'classname'   => 'local_activitydate_external',
+        'methodname'  => 'getcoursesincategory',
+        'classpath'   => 'blocks/activitydate/mod/externallib.php',
+        'description' => 'Return courses in a category',
         'type'        => 'read',
         'ajax' => true,
         'capabilities' => '',
         'loginrequired' => true
-    //                'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
-        )
-    );
-
-?>
+    )
+);

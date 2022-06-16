@@ -28,7 +28,7 @@ $string['activitydate:addinstance'] = 'Añadir un bloque modificador de fechas d
 $string['activitydate:myaddinstance'] = 'Añadir un bloque modificador de fechas de actividades en la página Mi Moodle';
 
 /** Descripción del bloque */
-$string['descriptionblock'] = 'Bloque encargado de realizar modificaciones a las fechas de diversas actividades de un curso en especifico via csv!';
+$string['descriptionblock'] = 'Bloque encargado de realizar multiples modificaciones de fechas de forma masiva, a cursos y sus dependencias (actividades, foros, reestriciones, etc)';
 
 /** Footer del bloque */
 $string['footerblock'] = 'Todos los derechos reservados';
