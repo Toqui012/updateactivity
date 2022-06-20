@@ -55,12 +55,11 @@ function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $id
             
             $result = json_decode($data->availability);
             
-            $date = date('d-m-Y', $result->c[0]->t); // Fecha (desde) de restrición
-            $enddate = date('d-m-Y', $result->c[1]->t); // Fecha (hasta) de restricción
-
+            
             // Actualización de (desde) de la restrición
             if ($result->c[0]->t != null) {
                 
+                $date = date('d-m-Y', $result->c[0]->t); // Fecha (desde) de restrición
                 if ($isMayor) {
                     $date = strtotime($date."+ $days days");
                     $result->c[0]->t = $date;
@@ -70,10 +69,11 @@ function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $id
                     $result->c[0]->t = $date;
                 }
             }
-
+            
             // Actualización de (hasta) de la restrición
             if ($result->c[1]->t != null) {
-    
+                
+                $enddate = date('d-m-Y', $result->c[1]->t); // Fecha (hasta) de restricción
                 if ($isMayor) {
                     $enddate = strtotime($enddate."+ $days days");
                     $result->c[1]->t = $enddate;
@@ -86,61 +86,76 @@ function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $id
 
             // Se transforma a json para respetar la estrucutra de la base de datos
             $result = json_encode($result);
-
-            $sqlToUpload = "UPDATE mdl_course_sections
-            SET availability = '$result' 
-            WHERE course = $idCourse";
-
+            $sqlToUpload = "UPDATE mdl_course_sections SET availability = '$result' WHERE course = $idCourse AND id = $data->id";
             $DB->execute($sqlToUpload, $params=null);
         }
     }
     
 }
 
-// Update Forum Restrictions
+// Update Forum Availability (Listo)
 function restrictionForumSections($sqlGetDateForum, $isMayor, $days, $idCourse)
 {
     global $DB;
 
-    echo('<br>');
-    echo('Función de Foros');
-
     foreach ($sqlGetDateForum as $data) {
 
-        $duedate = $data->duedate;
-        $cutoffdate = $data->cutoffdate;
-        $duedateResult = date('d-m-Y', $duedate);
-        $cutoffdateResult = date('d-m-Y', $cutoffdate);
+        if ($data->duedate != 0 && $data->cutoffdate != 0) {
+            
+            // Asignación de Fechas
+            $duedate = $data->duedate;
+            $cutoffdate = $data->cutoffdate;
+            
+            $duedateResult = date('d-m-Y', $duedate);
+            $cutoffdateResult = date('d-m-Y', $cutoffdate);
+            $sqlToUpload;
+            $cont = 0;
+    
+            // Duedate
+            if ($duedate != 0 || $duedate != null) {
+                
+                $cont++;
+                if ($isMayor) 
+                {   
+                    $duedate = strtotime($duedateResult. "+ $days days");
+                }
+                else 
+                {
+                    $duedate = strtotime($duedateResult. "- $days days");
+                }
 
-        if ($duedate != 0) {
+                $sqlToUpload = "UPDATE mdl_forum SET duedate = $duedate WHERE course = $idCourse";
+            }
+            
+            // Cutoffdate
+            if ($cutoffdate != 0 || $cutoffdate != null) {
+                
+                $cont++;
+                if ($isMayor) 
+                {
+                    $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
+                }
+                else
+                {      
+                    $cutoffdate = strtotime($cutoffdateResult. "- $days days");
+                }
 
-            if ($isMayor) 
-            {
-                $duedate = strtotime($duedateResult. "+ $days days");
+                $sqlToUpload = "UPDATE mdl_forum SET cutoffdate = $cutoffdate WHERE course = $idCourse";
             }
-            else 
-            {
-                $duedate = strtotime($duedateResult. "- $days days");
+            
+            // En el caso que existan ambos datos
+            if ($cont == 2) {
+                $sqlToUpload = "UPDATE mdl_forum 
+                                SET duedate = $duedate, cutoffdate = $cutoffdate
+                                WHERE course = $idCourse AND id = $data->id";
+                $DB->execute($sqlToUpload, $params=null);
             }
+            else if($cont == 1)
+            {
+                $DB->execute($sqlToUpload, $params=null);
+            }
+           
         }
-
-        if ($cutoffdate != 0) {
-
-            if ($isMayor) 
-            {
-                $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
-            }
-            else
-            {      
-                $cutoffdate = strtotime($cutoffdateResult. "- $days days");
-            }
-        }
-
-        $sqlToUpload = "UPDATE mdl_forum 
-                        SET duedate = $duedate, cutoffdate = $cutoffdate
-                        WHERE course = $idCourse";
-        
-        $DB->execute($sqlToUpload, $params=null);
     }
 }
 
@@ -167,7 +182,7 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
         $gradingduedateResult = date('d-m-Y', $gradingduedate);
         
 
-        if ($duedate != 0) {
+        if ($duedate != 0 || $duedate != null) {
 
             if ($isMayor) 
             {
@@ -179,7 +194,7 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
             }
         }
 
-        if ($cutoffdate != 0) {
+        if ($cutoffdate != 0 || $cutoffdate != null) {
 
             if ($isMayor) 
             {
@@ -191,7 +206,7 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
             }
         }
 
-        if ($allowsubmission != 0 || $gradingduedate != 0) {
+        if ($allowsubmission != 0 || $gradingduedate != 0 || $allowsubmission != null || $gradingduedate != null) {
             
             if ($isMayor) 
             {
@@ -225,24 +240,31 @@ function changeDateCourse($days, $newStartDate, $courseData, $isMayor, $idCourse
     echo('<br>');
     echo('Función de Cursos');
     
-    $endDate;
-    $endDate = $courseData[$idCourse]->enddate;
-    $endDateResult = date('d-m-Y', $endDate);
+    // En el caso de que el curso tenga fecha de termino, se cambian ambas fechas
+    if ($courseData[$idCourse]->enddate != null || $courseData[$idCourse]->enddate != 0) {
+        $endDate;
+        $endDate = $courseData[$idCourse]->enddate;
+        $endDateResult = date('d-m-Y', $endDate);
 
-    if ($isMayor) 
-    {
-        $endDate = strtotime($endDateResult. "+ $days days"); 
+        if ($isMayor) 
+        {
+            $endDate = strtotime($endDateResult. "+ $days days"); 
+        }
+        else
+        {
+            $endDate = strtotime($endDateResult. "- $days days");
+        }
+
+        $sqlToUpload = "UPDATE mdl_course SET startdate = $newStartDate, enddate = $endDate WHERE id = $idCourse";
+        $DB->execute($sqlToUpload, $params=null);
+    } 
+    else {
+
+        // En el caso de que no tenga fecha de temrino. solo se actualiza la fecha de inicio
+
+        $sqlToUpload = "UPDATE mdl_course SET startdate = $newStartDate WHERE id = $idCourse";
+        $DB->execute($sqlToUpload, $params=null);
     }
-    else
-    {
-        $endDate = strtotime($endDateResult. "- $days days");
-    }
-
-    $sqlToUpload = "UPDATE mdl_course 
-                    SET startdate = $newStartDate, enddate = $endDate
-                    WHERE id = $idCourse";
-    $DB->execute($sqlToUpload, $params=null);
-
 }
 
 // Update Course Restriction
