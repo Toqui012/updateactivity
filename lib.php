@@ -181,8 +181,8 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
         $allowsubmissionResult = date('d-m-Y', $allowsubmission);
         $gradingduedateResult = date('d-m-Y', $gradingduedate);
         
-
-        if ($duedate != 0 || $duedate != null) {
+        // Fecha de Entrega
+        if ($duedate != 0) {
 
             if ($isMayor) 
             {
@@ -193,30 +193,61 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
                 $duedate = strtotime($duedateResult. "- $days days");
             }
         }
+        else
+        {
+            $duedate = $data->duedate;
+        }
 
-        if ($cutoffdate != 0 || $cutoffdate != null) {
+        // Fecha de Corte
+        if ($cutoffdate != 0) {
 
             if ($isMayor) 
-            {
+            {   
+                print_r($cutoffdateResult);
                 $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
             }
             else
-            {      
+            {    
                 $cutoffdate = strtotime($cutoffdateResult. "- $days days");
             }
         }
+        else
+        {
+            $cutoffdate = $data->cutoffdate;
+        }
 
-        if ($allowsubmission != 0 || $gradingduedate != 0 || $allowsubmission != null || $gradingduedate != null) {
+        // Fecha de Permitir Envios
+        if ($allowsubmission != 0) {
+            
+            if ($isMayor)
+            {
+                $allowsubmission = strtotime($allowsubmissionResult. "+ $days days");
+            }
+            else
+            {
+                $allowsubmission = strtotime($allowsubmissionResult. "- $days days");
+            }
+            
+        }
+        else
+        {
+            $allowsubmission = $data->allowsubmissionsfromdate;
+        }
+
+        // Fecha Recordar Calificar
+        if ($gradingduedate != 0) {
             
             if ($isMayor) 
             {
-                $allowsubmission = strtotime($allowsubmissionResult. "+ $days days");
                 $gradingduedate = strtotime($gradingduedateResult. "+ $days days");    
             }
             else {
-                $allowsubmission = strtotime($allowsubmissionResult. "- $days days");
-                $gradingduedate = strtotime($allowsubmissionResult. "- $days days");
+                $gradingduedate = strtotime($gradingduedateResult. "- $days days");
             }
+        }
+        else
+        {
+            $gradingduedate = $data->gradingduedate;
         }
 
         $sqlToUpload = "UPDATE mdl_assign
@@ -224,8 +255,8 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
                             cutoffdate = $cutoffdate,
                             allowsubmissionsfromdate = $allowsubmission,
                             gradingduedate = $gradingduedate
-                        WHERE course = $idCourse";
-        $DB->execute($sqlToUpload, $params = null);
+                        WHERE course = $idCourse AND id = $data->id";
+        // $DB->execute($sqlToUpload, $params = null);
     }   
 }
 
