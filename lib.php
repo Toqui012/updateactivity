@@ -43,7 +43,7 @@ function ismayor($dateSelected, $dateInitialCourse)
     }
 }
 
-// Update Course Restrictions
+// Update Course Sections (Listo)
 function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $idCourse)
 {   
     global $DB;
@@ -54,8 +54,7 @@ function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $id
         if ($date = $data->availability !=null) {
             
             $result = json_decode($data->availability);
-            
-            
+
             // Actualización de (desde) de la restrición
             if ($result->c[0]->t != null) {
                 
@@ -72,7 +71,6 @@ function restrictionsCourseSections($sqlGetDateRestriction, $isMayor, $days, $id
             
             // Actualización de (hasta) de la restrición
             if ($result->c[1]->t != null) {
-                
                 $enddate = date('d-m-Y', $result->c[1]->t); // Fecha (hasta) de restricción
                 if ($isMayor) {
                     $enddate = strtotime($enddate."+ $days days");
@@ -159,7 +157,7 @@ function restrictionForumSections($sqlGetDateForum, $isMayor, $days, $idCourse)
     }
 }
 
-// Update Assign Restrictions
+// Update Assign Restrictions (Listo)
 function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCourse)
 {
     global $DB;
@@ -256,23 +254,17 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
                             allowsubmissionsfromdate = $allowsubmission,
                             gradingduedate = $gradingduedate
                         WHERE course = $idCourse AND id = $data->id";
-        // $DB->execute($sqlToUpload, $params = null);
+        $DB->execute($sqlToUpload, $params = null);
     }   
 }
 
-// Update Course Date
+// Update Course Date (Listo)
 function changeDateCourse($days, $newStartDate, $courseData, $isMayor, $idCourse) // newStardate = date selected
 {
     global $DB;
 
-    /** ------------ Fixear Codigo ----------- */
-    // Validar si es null
-
-    echo('<br>');
-    echo('Función de Cursos');
-    
     // En el caso de que el curso tenga fecha de termino, se cambian ambas fechas
-    if ($courseData[$idCourse]->enddate != null || $courseData[$idCourse]->enddate != 0) {
+    if ($courseData[$idCourse]->enddate != 0) {
         $endDate;
         $endDate = $courseData[$idCourse]->enddate;
         $endDateResult = date('d-m-Y', $endDate);
@@ -298,15 +290,13 @@ function changeDateCourse($days, $newStartDate, $courseData, $isMayor, $idCourse
     }
 }
 
-// Update Course Restriction
+// Update Course Restriction (Listo)
 function updateCourseRestriction($sqlGetCourseModules, $isMayor, $days, $idCourse){
     
     global $DB;
     
     foreach ($sqlGetCourseModules as $data) {
     
-        $cont = 0;
-        $endcont = 1;
 
         // se valida que no entren fechas null
         if ($date = $data->availability != null) {
@@ -347,12 +337,10 @@ function updateCourseRestriction($sqlGetCourseModules, $isMayor, $days, $idCours
 
             $sqlToUpload = "UPDATE mdl_course_modules
             SET availability = '$result' 
-            WHERE course = $idCourse";
+            WHERE course = $idCourse AND ";
 
             $DB->execute($sqlToUpload, $params=null);
         }
-
-        
     }
 }
 
