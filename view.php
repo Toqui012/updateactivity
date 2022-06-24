@@ -123,12 +123,14 @@ if($activitydate->is_cancelled()) {
                 $sqlGetDateAssign = $DB->get_records('assign', array('course' => $value)); // duedate / cutoffdate
                 $sqlGetDateRestriction = $DB->get_records('course_sections', array('course' => $value));
                 $sqlGetCourseRestriction = $DB->get_records('course_modules', array('course' => $value));
+                $sqlGetQuiz = $DB->get_records('quiz', array('course' => $value));
                 /* Upload sections */
                 changeDateCourse($days, $fromform->initialdate, $sqlGetDate, $mayorOrLess, $value);
                 restrictionsCourseSections($sqlGetDateRestriction, $mayorOrLess, $days, $value);
                 restrictionForumSections($sqlGetDateForum, $mayorOrLess, $days, $value);
                 restrictionAssignSections($sqlGetDateAssign, $mayorOrLess, $days, $value);
                 updateCourseRestriction($sqlGetCourseRestriction, $mayorOrLess, $days, $value);
+                updateQuizTime($sqlGetQuiz, $mayorOrLess, $days, $value);
             }
 
             redirect($courseurl, "La operación se ha llevado a cabo exitosamente", null, \core\output\notification::NOTIFY_SUCCESS);
@@ -138,8 +140,8 @@ if($activitydate->is_cancelled()) {
             redirect($courseurl, "Formulario incompleto", null, \core\output\notification::NOTIFY_ERROR);
         }
     } catch (\Throwable $th) {
-        redirect($courseurl, "Ha ocurrido un problema interno al actualizar los cursos", null, \core\output\notification::NOTIFY_ERROR);
-        // throw $th;
+        throw $th;
+        // redirect($courseurl, "Ha ocurrido un problema interno al actualizar los cursos", null, \core\output\notification::NOTIFY_ERROR);
     }    
 
 } else {

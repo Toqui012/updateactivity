@@ -110,7 +110,7 @@ function restrictionForumSections($sqlGetDateForum, $isMayor, $days, $idCourse)
             $cont = 0;
     
             // Duedate
-            if ($duedate != 0 || $duedate != null) {
+            if ($duedate != 0) {
                 
                 $cont++;
                 if ($isMayor) 
@@ -126,7 +126,7 @@ function restrictionForumSections($sqlGetDateForum, $isMayor, $days, $idCourse)
             }
             
             // Cutoffdate
-            if ($cutoffdate != 0 || $cutoffdate != null) {
+            if ($cutoffdate != 0) {
                 
                 $cont++;
                 if ($isMayor) 
@@ -337,10 +337,68 @@ function updateCourseRestriction($sqlGetCourseModules, $isMayor, $days, $idCours
 
             $sqlToUpload = "UPDATE mdl_course_modules
             SET availability = '$result' 
-            WHERE course = $idCourse AND ";
+            WHERE course = $idCourse AND $data->id";
 
             $DB->execute($sqlToUpload, $params=null);
         }
     }
 }
 
+// Update Time Quiz (Listo)
+function updateQuizTime($sqlGetQuiz, $isMayor, $days, $idCourse)
+{
+    global $DB;
+
+    foreach ($sqlGetQuiz as $data) {
+        
+        if ($data->timeopen != 0 && $data->timeclose != 0) {
+            
+            /* GET DATA */
+            $timeopen = $data->timeopen;
+            $timeclose = $data->timeclose;
+
+            /* CONVERSION */
+            $timeopenResult = date('d-m-Y', $timeopen);
+            $timecloseResult = date('d-m-Y', $timeclose);
+
+            // Validate TimeOpen
+            if ($timeopen != 0) {
+
+                if ($isMayor) {
+
+                    $timeopen = strtotime($timeopenResult. "+ $days days");
+                }
+                else{
+                    $timeopen = strtotime($timeopenResult. "- $days days");
+                }
+            }
+
+            if ($timeclose != 0) {
+                
+                if ($isMayor) {
+                    
+                    $timeclose = strtotime($timecloseResult. "+ $days days");
+                }
+                else {
+                    $timeclose = strtotime($timecloseResult. "- $days days");
+                }
+            }
+
+
+            $sqlToUpload = "UPDATE mdl_quiz 
+                            SET timeopen = $timeopen, timeclose = $timeclose
+                            WHERE course = $idCourse AND id = $data->id";
+
+            $DB->execute($sqlToUpload, $params=null);
+        }
+    }
+}
+
+function updatePoll($sqlGetPoll, $isMayor, $days, $idCourse)
+{
+    
+}
+
+// Update Assign
+// Encuesta
+// Taller
