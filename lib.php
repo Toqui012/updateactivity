@@ -159,9 +159,6 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
 {
     global $DB;
 
-    echo('<br>');
-    echo('Función de Tareas (Assign)');
-
     foreach ($sqlGetDateAssign as $data) {
         
         /* GET DATE */
@@ -198,7 +195,6 @@ function restrictionAssignSections ($sqlGetDateAssign, $isMayor, $days, $idCours
 
             if ($isMayor) 
             {   
-                print_r($cutoffdateResult);
                 $cutoffdate = strtotime($cutoffdateResult. "+ $days days");
             }
             else
@@ -335,9 +331,6 @@ function updateCourseRestriction($sqlGetCourseModules, $isMayor, $days, $idCours
             SET availability = '$result' 
             WHERE course = $idCourse AND id = $data->id";
 
-            echo('<br>');
-            echo($sqlToUpload);
-
             $DB->execute($sqlToUpload, $params=null);
         }
     }
@@ -386,7 +379,7 @@ function updateQuizTime($sqlGetQuiz, $isMayor, $days, $idCourse)
     }
 }
 
-// Update Poll (En Pruebas)
+// Update Poll (Listo)
 function updatePoll($sqlGetPoll, $isMayor, $days, $idCourse)
 {
     global $DB;
@@ -434,5 +427,91 @@ function updatePoll($sqlGetPoll, $isMayor, $days, $idCourse)
     }
 }
 
+// Update Taller (Workshop) (Listo)
+function updateWorkshop($sqlGetWorkshop, $isMayor, $days, $idCourse)
+{
+
+    // Definición de DB para ejecutar sentencias SQL
+    global $DB;
+
+    foreach ($sqlGetWorkshop as $data) {
+        
+        /* GET DATA */
+        $dateSubmissionstart = $data->submissionstart;
+        $dateSubmissionend = $data->submissionend;
+        $dateAssessmentstart = $data->assessmentstart;
+        $dateAssessmentend = $data->assessmentend;
+
+
+        // Date Submissionstart
+        if ($dateSubmissionstart != 0) {
+
+            $dateSubmissionstartResult = date('d-m-y', $dateSubmissionstart); // conversion to d-m-Y
+
+            if ($isMayor) {
+
+                $dateSubmissionstart = strtotime($dateSubmissionstartResult. "+ $days days");
+            }
+            else
+            {
+                $dateSubmissionstart = strtotime($dateSubmissionstartResult. "- $days days");
+            }
+        }
+
+        // Date Submissionend
+        if ($dateSubmissionend != 0) {
+            
+            $dateSubmissionendResult = date('d-m-Y', $dateSubmissionend); // conversion to d-m-Y
+
+            if ($isMayor) {
+
+                $dateSubmissionend = strtotime($dateSubmissionendResult. "+ $days days");
+            }
+            else
+            {
+                $dateSubmissionend = strtotime($dateSubmissionendResult. "- $days days");
+            }
+        }
+
+        // Date Assessmentstart
+        if ($dateAssessmentstart != 0) {
+
+            $dateAssessmentstartResult = date('d-m-Y', $dateAssessmentstart);
+
+            if ($isMayor) {
+
+                $dateAssessmentstart = strtotime($dateAssessmentstartResult. "+ $days days");
+            }
+            else
+            {
+                $dateAssessmentstart = strtotime($dateAssessmentstartResult. "- $days days");
+            }
+        }
+
+        // Date Assessmentend
+        if ($dateAssessmentend != 0) {
+            
+            $dateAssessmentendResult = date('d-m-Y', $dateAssessmentend);
+
+            if ($isMayor) {
+                
+                $dateAssessmentend = strtotime($dateAssessmentendResult. "+ $days days");
+            }
+            else
+            {
+                $dateAssessmentend = strtotime($dateAssessmentendResult. "- $days days");
+            }
+        }
+
+        $sqlToUpload = "UPDATE mdl_workshop 
+                        SET submissionstart = $dateSubmissionstart,
+                            submissionend = $dateSubmissionend,
+                            assessmentstart = $dateAssessmentstart,
+                            assessmentend = $dateAssessmentend
+                        WHERE course = $idCourse AND id = $data->id";
+
+        $DB->execute($sqlToUpload, $params=null);
+    }
+}
+
 // Update Assign
-// Taller

@@ -124,13 +124,17 @@ if($activitydate->is_cancelled()) {
                 $sqlGetDateRestriction = $DB->get_records('course_sections', array('course' => $value));
                 $sqlGetCourseRestriction = $DB->get_records('course_modules', array('course' => $value));
                 $sqlGetQuiz = $DB->get_records('quiz', array('course' => $value));
+                $sqlGetPoll = $DB->get_records('feedback', array('course' => $value));
+                $sqlGetWorkshop = $DB->get_records('workshop', array('course' => $value));
                 /* Upload sections */
-                changeDateCourse($days, $fromform->initialdate, $sqlGetDate, $mayorOrLess, $value);
-                restrictionsCourseSections($sqlGetDateRestriction, $mayorOrLess, $days, $value);
-                restrictionForumSections($sqlGetDateForum, $mayorOrLess, $days, $value);
-                restrictionAssignSections($sqlGetDateAssign, $mayorOrLess, $days, $value);
-                updateCourseRestriction($sqlGetCourseRestriction, $mayorOrLess, $days, $value);
-                updateQuizTime($sqlGetQuiz, $mayorOrLess, $days, $value);
+                changeDateCourse($days, $fromform->initialdate, $sqlGetDate, $mayorOrLess, $value); // Course
+                restrictionsCourseSections($sqlGetDateRestriction, $mayorOrLess, $days, $value); // Sections (Topico)
+                restrictionForumSections($sqlGetDateForum, $mayorOrLess, $days, $value); // Foros
+                restrictionAssignSections($sqlGetDateAssign, $mayorOrLess, $days, $value); // Actividades
+                updateCourseRestriction($sqlGetCourseRestriction, $mayorOrLess, $days, $value); // Restriction
+                updateQuizTime($sqlGetQuiz, $mayorOrLess, $days, $value); // Examen
+                updatePoll($sqlGetPoll, $mayorOrLess, $days, $value); // Encuestas
+                updateWorkshop($sqlGetWorkshop, $mayorOrLess, $days, $value); // Talleres
             }
 
             redirect($courseurl, "La operación se ha llevado a cabo exitosamente", null, \core\output\notification::NOTIFY_SUCCESS);

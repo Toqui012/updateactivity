@@ -23,5 +23,5 @@
  */
 
 $plugin->component = 'block_activitydate';
-$plugin->version = 2021102000;
+$plugin->version = 2021112000;
 $plugin->requires = 2019052000; // Moodle 3.7
