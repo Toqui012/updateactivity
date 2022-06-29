@@ -379,7 +379,7 @@ function updateQuizTime($sqlGetQuiz, $isMayor, $days, $idCourse)
     }
 }
 
-// Update Poll (Listo)
+// Update Poll (Encueestas) (Listo)
 function updatePoll($sqlGetPoll, $isMayor, $days, $idCourse)
 {
     global $DB;

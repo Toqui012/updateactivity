@@ -42,8 +42,6 @@ class block_activitydate extends block_base {
         $this->content = new stdClass;
         if (!empty($this->config->text)){
             $this->content->text = $this->config->text;
-        } else {
-            $this->content->text = get_string('descriptionblock', 'block_activitydate');
         }
         // $this->content->footer = get_string('footerblock', 'block_activitydate');
 

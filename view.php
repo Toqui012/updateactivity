@@ -89,6 +89,7 @@ if($activitydate->is_cancelled()) {
     
     // Url de redirección
     $courseurl = new moodle_url('/course/view.php', array('id' => $courseid));
+    $testUrl = new moodle_url('/course/management.php');
     
     // Source
     try {
@@ -137,6 +138,8 @@ if($activitydate->is_cancelled()) {
                 updateWorkshop($sqlGetWorkshop, $mayorOrLess, $days, $value); // Talleres
             }
 
+            // $cache = cache::make(cache_store::MODE_APPLICATION, 'component', 'area');
+            // $result = $cache->purge();
             redirect($courseurl, "La operación se ha llevado a cabo exitosamente", null, \core\output\notification::NOTIFY_SUCCESS);
         }
         else
